@@ -2,7 +2,8 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-
+import {useSession} from 'next-auth/react'
+import {User2} from 'lucide-react'
 const navItems = [
   { name: "Speech Analysis", href: "/speech-analysis" },
   { name: "Text to Speech", href: "/text-to-speech" },
@@ -10,6 +11,7 @@ const navItems = [
 ]
 
 export default function Navbar() {
+  const {data:session}=useSession()
   const pathname = usePathname()
 
   return (
@@ -31,6 +33,9 @@ export default function Navbar() {
               </Link>
             )
           })}
+            <Link href={!session || !session.user?"/login":"/"}  className={`text-sm font-medium transition-colors ${
+                  pathname=='/login' ? "text-white font-semibold" : "text-gray-400 hover:text-white"
+                }`}>{!session || !session.user?"Login":<User2></User2>}</Link>
         </div>
       </div>
     </nav>
