@@ -15,89 +15,89 @@ import {
 } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
-const data =  {
-  "num_matched": 7,
-  "total": 11,
-  "word_alignment": [
-      {
-          "actual": "the",
-          "expected": "wheel",
-          "matched": false,
-          "ref_time": "0.00-0.90",
-          "user_time": "4.70-4.80"
-      },
-      {
-          "actual": "and",
-          "expected": "and",
-          "matched": true,
-          "ref_time": "0.90-1.10",
-          "user_time": "2.50-2.90"
-      },
-      {
-          "actual": "fire",
-          "expected": "fire",
-          "matched": true,
-          "ref_time": "1.10-1.30",
-          "user_time": "2.90-3.10"
-      },
-      {
-          "actual": "are",
-          "expected": "are",
-          "matched": true,
-          "ref_time": "1.30-1.90",
-          "user_time": "3.10-3.50"
-      },
-      {
-          "actual": "2",
-          "expected": "2",
-          "matched": true,
-          "ref_time": "1.90-2.00",
-          "user_time": "3.50-4.30"
-      },
-      {
-          "actual": "of",
-          "expected": "of",
-          "matched": true,
-          "ref_time": "2.00-2.20",
-          "user_time": "4.30-4.70"
-      },
-      {
-          "actual": null,
-          "expected": "the",
-          "matched": false,
-          "ref_time": "2.20-2.20",
-          "user_time": null
-      },
-      {
-          "actual": "first",
-          "expected": "best",
-          "matched": false,
-          "ref_time": "2.20-2.40",
-          "user_time": "4.80-5.40"
-      },
-      {
-          "actual": "inventions",
-          "expected": "inventions",
-          "matched": true,
-          "ref_time": "2.40-3.40",
-          "user_time": "5.40-6.30"
-      },
-      {
-          "actual": "of",
-          "expected": "of",
-          "matched": true,
-          "ref_time": "3.40-3.60",
-          "user_time": "6.30-6.70"
-      },
-      {
-          "actual": null,
-          "expected": "humanity",
-          "matched": false,
-          "ref_time": "3.60-4.40",
-          "user_time": null
-      }
-  ]
-}
+// const data =  {
+//   "num_matched": 7,
+//   "total": 11,
+//   "word_alignment": [
+//       {
+//           "actual": "the",
+//           "expected": "wheel",
+//           "matched": false,
+//           "ref_time": "0.00-0.90",
+//           "user_time": "4.70-4.80"
+//       },
+//       {
+//           "actual": "and",
+//           "expected": "and",
+//           "matched": true,
+//           "ref_time": "0.90-1.10",
+//           "user_time": "2.50-2.90"
+//       },
+//       {
+//           "actual": "fire",
+//           "expected": "fire",
+//           "matched": true,
+//           "ref_time": "1.10-1.30",
+//           "user_time": "2.90-3.10"
+//       },
+//       {
+//           "actual": "are",
+//           "expected": "are",
+//           "matched": true,
+//           "ref_time": "1.30-1.90",
+//           "user_time": "3.10-3.50"
+//       },
+//       {
+//           "actual": "2",
+//           "expected": "2",
+//           "matched": true,
+//           "ref_time": "1.90-2.00",
+//           "user_time": "3.50-4.30"
+//       },
+//       {
+//           "actual": "of",
+//           "expected": "of",
+//           "matched": true,
+//           "ref_time": "2.00-2.20",
+//           "user_time": "4.30-4.70"
+//       },
+//       {
+//           "actual": null,
+//           "expected": "the",
+//           "matched": false,
+//           "ref_time": "2.20-2.20",
+//           "user_time": null
+//       },
+//       {
+//           "actual": "first",
+//           "expected": "best",
+//           "matched": false,
+//           "ref_time": "2.20-2.40",
+//           "user_time": "4.80-5.40"
+//       },
+//       {
+//           "actual": "inventions",
+//           "expected": "inventions",
+//           "matched": true,
+//           "ref_time": "2.40-3.40",
+//           "user_time": "5.40-6.30"
+//       },
+//       {
+//           "actual": "of",
+//           "expected": "of",
+//           "matched": true,
+//           "ref_time": "3.40-3.60",
+//           "user_time": "6.30-6.70"
+//       },
+//       {
+//           "actual": null,
+//           "expected": "humanity",
+//           "matched": false,
+//           "ref_time": "3.60-4.40",
+//           "user_time": null
+//       }
+//   ]
+// }
 
 export default function SpeechAnalysisPage() {
   const [transcript, setTranscript] = useState("")
@@ -106,6 +106,7 @@ export default function SpeechAnalysisPage() {
   const audioChunksRef = useRef([])
   const [langCode, setLangCode] = useState("en-US")
   const [voice, setVoice] = useState("MALE")
+  const [data, setData] = useState(null)
   const lang = {
     "en-IN": { "MALE": "en-IN-Standard-B", "FEMALE": "en-IN-Standard-A", "whisper": "en" },
     "en-US": { "MALE": "en-IN-Standard-B", "FEMALE": "en-IN-Standard-A", "whisper": "en" },
@@ -143,7 +144,7 @@ export default function SpeechAnalysisPage() {
     const ttsBlob = response.data;
     const audioUrl = URL.createObjectURL(response.data);
     const audio = new Audio(audioUrl);
-    audio.play()
+    // audio.play()
 
 
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
@@ -160,15 +161,24 @@ export default function SpeechAnalysisPage() {
     mediaRecorder.onstop = async () => {
       const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' })
       const formData = new FormData()
-      formData.append('user', audioBlob, 'recording.wav')
-      formData.append('reference', ttsBlob, 'recording2.wav')
-      formData.append('language', langCode)
+      formData.append('user', audioBlob, 'user_audio.wav')
+      formData.append('reference', ttsBlob, 'ref_audio.wav')
+
+      await axios.post('/api/save-audio', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+
+      const formData2 = new FormData()
+      formData2.append('user', audioBlob, 'recording.wav')
+      formData2.append('reference', ttsBlob, 'recording2.wav')
+      formData2.append('language', langCode)
 
       try {
-        const response = await axios.post('http://127.0.0.1:5001/compare-audio-whisper', formData, {
+        const response = await axios.post('http://127.0.0.1:5001/compare-audio-whisper', formData2, {
           headers: { 'Content-Type': 'multipart/form-data' },
         })
         setTranscript(response.data.transcript)
+        setData(response.data)
         console.log('STT Response:', response.data)
       } catch (error) {
         console.error('STT Error:', error)
@@ -249,7 +259,7 @@ export default function SpeechAnalysisPage() {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {data.word_alignment.map((item: any, idx: number) => {
+        {data && data.word_alignment.map((item: any, idx: number) => {
           const [refStart, refEnd] = item.ref_time.split("-").map(parseFloat)
           const [userStart, userEnd] = item.user_time ? item.user_time.split("-").map(parseFloat) : [null, null]
           return (
