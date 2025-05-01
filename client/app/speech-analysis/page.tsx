@@ -116,20 +116,26 @@ export default function SpeechAnalysisPage() {
     "fr-FR": { "MALE": "fr-FR-Standard-B", "FEMALE": "fr-FR-Standard-C", "whisper": "fr" },
     "de-DE": { "MALE": "de-DE-Standard-B", "FEMALE": "de-DE-Standard-C", "whisper": "de" },
   }
-  const playSegment = (file: string, start: number, end: number) => {
-    const audio = new Audio(file)
+  // const playSegment = (file: string, start: number, end: number) => {
+  //   const audio = new Audio(file)
     
-    audio.addEventListener('loadedmetadata', () => {
-      audio.currentTime = start
+  //   audio.addEventListener('loadedmetadata', () => {
+  //     audio.currentTime = start
   
-      audio.play().then(() => {
-        const duration = (end - start) * 1000
-        setTimeout(() => audio.pause(), duration)
-      }).catch((err) => {
-        console.error("Playback error:", err)
-      })
-    })
-  }
+  //     audio.play().then(() => {
+  //       const duration = (end - start) * 1000
+  //       setTimeout(() => audio.pause(), duration)
+  //     }).catch((err) => {
+  //       console.error("Playback error:", err)
+  //     })
+  //   })
+  // }
+  const playWholeAudio = (file: string) => {
+    const audio = new Audio(file);
+    audio.play().catch((err) => {
+      console.error("Playback error:", err);
+    });
+  };
 
 
   const startRecording = async () => {
@@ -176,15 +182,15 @@ export default function SpeechAnalysisPage() {
       formData2.append('language', langCode)
 
       try {
-        const response = await axios.post('http://127.0.0.1:5001/compare-audio-whisper', formData, {
+        const response = await axios.post('http://127.0.0.1:5001/compare-audio-whisper', formData2, {
           headers: { 'Content-Type': 'multipart/form-data' },
         })
-        await axios.post('/api/feedAudio', {
-          user_audio_base64: audioB,
-          reference_audio_base64: ttsB,
-          language: langCode,
-          user_email: session?.user?.email || "anonymous"
-        });
+        // await axios.post('/api/feedAudio', {
+        //   user_audio_base64: audioBlob,
+        //   reference_audio_base64: ttsBlob,
+        //   language: langCode,
+        //   user_email: session?.user?.email || "anonymous"
+        // });
 
         setTranscript(response.data.transcript)
         setData(response.data)
@@ -271,12 +277,54 @@ export default function SpeechAnalysisPage() {
             </div>
           </div>
           <Table>
+  <TableHeader>
+    <TableRow>
+      <TableHead>Status</TableHead>
+      <TableHead>Expected</TableHead>
+      <TableHead>Actual</TableHead>
+    </TableRow>
+  </TableHeader>
+  <TableBody>
+    {data.word_alignment.map((item, idx) => {
+      let rowClass = "text-black hover:text-black"; // force text color on hover too
+      switch (item.status) {
+        case "ok":
+          rowClass += " bg-green-100 hover:bg-green-200";
+          break;
+        case "mispronounced":
+          rowClass += " bg-yellow-100 hover:bg-yellow-200";
+          break;
+        case "missing":
+          rowClass += " bg-red-100 hover:bg-red-200";
+          break;
+        case "extra":
+          rowClass += " bg-orange-100 hover:bg-orange-200";
+          break;
+        default:
+          rowClass += "";
+      }
+
+      return (
+        <TableRow key={idx} className={rowClass}>
+          <TableCell>
+            {item.status === "ok" && "✅ Matched"}
+            {item.status === "mispronounced" && "🔶 Mispronounced"}
+            {item.status === "missing" && "❌ Missing"}
+            {item.status === "extra" && "⚠️ Extra"}
+          </TableCell>
+          <TableCell>{item.expected ?? "—"}</TableCell>
+          <TableCell>{item.actual ?? "⛔ Missing"}</TableCell>
+        </TableRow>
+      );
+    })}
+  </TableBody>
+</Table>
+
+          {/* <Table>
         <TableHeader>
           <TableRow>
             <TableHead>Expected</TableHead>
             <TableHead>Actual</TableHead>
-            {/* <TableHead>Reference Time</TableHead>
-            <TableHead>User Time</TableHead> */}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -284,14 +332,10 @@ export default function SpeechAnalysisPage() {
             <TableRow key={idx}>
               <TableCell>{item.expected}</TableCell>
               <TableCell>{item.actual ?? "⛔ Missing"}</TableCell>
-              {/* <TableCell>{item.ref_time}</TableCell> */}
-              {/* <TableCell>
-                {item.user_time ?? <span className="text-red-500">⛔ Not Found</span>}
-              </TableCell> */}
             </TableRow>
           ))}
         </TableBody>
-      </Table>
+      </Table> */}
         </div>
       )}
     </div>
