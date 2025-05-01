@@ -14,6 +14,7 @@ import {
   SelectItem,
 } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { useSession } from "next-auth/react"
 
 const data =  {
   "num_matched": 7,
@@ -100,6 +101,7 @@ const data =  {
 }
 
 export default function SpeechAnalysisPage() {
+  const {data:session}=useSession()
   const [transcript, setTranscript] = useState("")
   const [isRecording, setIsRecording] = useState(false)
   const mediaRecorderRef = useRef(null)
@@ -127,7 +129,14 @@ export default function SpeechAnalysisPage() {
       })
     })
   }
-
+  const blobToBase64 = (blob) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  };
 
   const startRecording = async () => {
     const text = document.querySelector("textarea")?.value
@@ -165,9 +174,18 @@ export default function SpeechAnalysisPage() {
       formData.append('language', langCode)
 
       try {
+        const audioB=await blobToBase64(audioBlob)
+        const ttsB=await blobToBase64(ttsBlob)
         const response = await axios.post('http://127.0.0.1:5001/compare-audio-whisper', formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         })
+        await axios.post('/api/feedAudio', {
+          user_audio_base64: audioB,
+          reference_audio_base64: ttsB,
+          language: langCode,
+          user_email: session?.user?.email || "anonymous"
+        });
+
         setTranscript(response.data.transcript)
         console.log('STT Response:', response.data)
       } catch (error) {

@@ -11,7 +11,7 @@ const savedUser=await prisma.user.create({
         email,password,name
     }
 })
-return NextResponse.json({message:"Created Successfully",status:201})
+return NextResponse.json({message:"Succesfully Created"},{status:201})
 }
 catch(err){
     return NextResponse.json({message:"Internal server error",status:500})

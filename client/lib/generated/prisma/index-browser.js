@@ -118,7 +118,8 @@ exports.Prisma.UserScalarFieldEnum = {
   name: 'name',
   email: 'email',
   password: 'password',
-  audios: 'audios',
+  recordedAudios: 'recordedAudios',
+  actualAudios: 'actualAudios',
   role: 'role'
 };
 

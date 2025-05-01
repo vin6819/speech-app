@@ -871,7 +871,8 @@ export namespace Prisma {
     name: number
     email: number
     password: number
-    audios: number
+    recordedAudios: number
+    actualAudios: number
     role: number
     _all: number
   }
@@ -898,7 +899,8 @@ export namespace Prisma {
     name?: true
     email?: true
     password?: true
-    audios?: true
+    recordedAudios?: true
+    actualAudios?: true
     role?: true
     _all?: true
   }
@@ -980,7 +982,8 @@ export namespace Prisma {
     name: string
     email: string
     password: string
-    audios: string[]
+    recordedAudios: string[]
+    actualAudios: string[]
     role: $Enums.Role
     _count: UserCountAggregateOutputType | null
     _min: UserMinAggregateOutputType | null
@@ -1006,7 +1009,8 @@ export namespace Prisma {
     name?: boolean
     email?: boolean
     password?: boolean
-    audios?: boolean
+    recordedAudios?: boolean
+    actualAudios?: boolean
     role?: boolean
   }, ExtArgs["result"]["user"]>
 
@@ -1017,11 +1021,12 @@ export namespace Prisma {
     name?: boolean
     email?: boolean
     password?: boolean
-    audios?: boolean
+    recordedAudios?: boolean
+    actualAudios?: boolean
     role?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "email" | "password" | "audios" | "role", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "email" | "password" | "recordedAudios" | "actualAudios" | "role", ExtArgs["result"]["user"]>
 
   export type $UserPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "User"
@@ -1031,7 +1036,8 @@ export namespace Prisma {
       name: string
       email: string
       password: string
-      audios: string[]
+      recordedAudios: string[]
+      actualAudios: string[]
       role: $Enums.Role
     }, ExtArgs["result"]["user"]>
     composites: {}
@@ -1429,7 +1435,8 @@ export namespace Prisma {
     readonly name: FieldRef<"User", 'String'>
     readonly email: FieldRef<"User", 'String'>
     readonly password: FieldRef<"User", 'String'>
-    readonly audios: FieldRef<"User", 'String[]'>
+    readonly recordedAudios: FieldRef<"User", 'String[]'>
+    readonly actualAudios: FieldRef<"User", 'String[]'>
     readonly role: FieldRef<"User", 'Role'>
   }
     
@@ -1788,7 +1795,8 @@ export namespace Prisma {
     name: 'name',
     email: 'email',
     password: 'password',
-    audios: 'audios',
+    recordedAudios: 'recordedAudios',
+    actualAudios: 'actualAudios',
     role: 'role'
   };
 
@@ -1869,7 +1877,8 @@ export namespace Prisma {
     name?: StringFilter<"User"> | string
     email?: StringFilter<"User"> | string
     password?: StringFilter<"User"> | string
-    audios?: StringNullableListFilter<"User">
+    recordedAudios?: StringNullableListFilter<"User">
+    actualAudios?: StringNullableListFilter<"User">
     role?: EnumRoleFilter<"User"> | $Enums.Role
   }
 
@@ -1878,7 +1887,8 @@ export namespace Prisma {
     name?: SortOrder
     email?: SortOrder
     password?: SortOrder
-    audios?: SortOrder
+    recordedAudios?: SortOrder
+    actualAudios?: SortOrder
     role?: SortOrder
   }
 
@@ -1890,7 +1900,8 @@ export namespace Prisma {
     NOT?: UserWhereInput | UserWhereInput[]
     name?: StringFilter<"User"> | string
     password?: StringFilter<"User"> | string
-    audios?: StringNullableListFilter<"User">
+    recordedAudios?: StringNullableListFilter<"User">
+    actualAudios?: StringNullableListFilter<"User">
     role?: EnumRoleFilter<"User"> | $Enums.Role
   }, "id" | "email">
 
@@ -1899,7 +1910,8 @@ export namespace Prisma {
     name?: SortOrder
     email?: SortOrder
     password?: SortOrder
-    audios?: SortOrder
+    recordedAudios?: SortOrder
+    actualAudios?: SortOrder
     role?: SortOrder
     _count?: UserCountOrderByAggregateInput
     _max?: UserMaxOrderByAggregateInput
@@ -1914,7 +1926,8 @@ export namespace Prisma {
     name?: StringWithAggregatesFilter<"User"> | string
     email?: StringWithAggregatesFilter<"User"> | string
     password?: StringWithAggregatesFilter<"User"> | string
-    audios?: StringNullableListFilter<"User">
+    recordedAudios?: StringNullableListFilter<"User">
+    actualAudios?: StringNullableListFilter<"User">
     role?: EnumRoleWithAggregatesFilter<"User"> | $Enums.Role
   }
 
@@ -1923,7 +1936,8 @@ export namespace Prisma {
     name: string
     email: string
     password: string
-    audios?: UserCreateaudiosInput | string[]
+    recordedAudios?: UserCreaterecordedAudiosInput | string[]
+    actualAudios?: UserCreateactualAudiosInput | string[]
     role?: $Enums.Role
   }
 
@@ -1932,7 +1946,8 @@ export namespace Prisma {
     name: string
     email: string
     password: string
-    audios?: UserCreateaudiosInput | string[]
+    recordedAudios?: UserCreaterecordedAudiosInput | string[]
+    actualAudios?: UserCreateactualAudiosInput | string[]
     role?: $Enums.Role
   }
 
@@ -1940,7 +1955,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
-    audios?: UserUpdateaudiosInput | string[]
+    recordedAudios?: UserUpdaterecordedAudiosInput | string[]
+    actualAudios?: UserUpdateactualAudiosInput | string[]
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
   }
 
@@ -1948,7 +1964,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
-    audios?: UserUpdateaudiosInput | string[]
+    recordedAudios?: UserUpdaterecordedAudiosInput | string[]
+    actualAudios?: UserUpdateactualAudiosInput | string[]
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
   }
 
@@ -1957,7 +1974,8 @@ export namespace Prisma {
     name: string
     email: string
     password: string
-    audios?: UserCreateaudiosInput | string[]
+    recordedAudios?: UserCreaterecordedAudiosInput | string[]
+    actualAudios?: UserCreateactualAudiosInput | string[]
     role?: $Enums.Role
   }
 
@@ -1965,7 +1983,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
-    audios?: UserUpdateaudiosInput | string[]
+    recordedAudios?: UserUpdaterecordedAudiosInput | string[]
+    actualAudios?: UserUpdateactualAudiosInput | string[]
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
   }
 
@@ -1973,7 +1992,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     password?: StringFieldUpdateOperationsInput | string
-    audios?: UserUpdateaudiosInput | string[]
+    recordedAudios?: UserUpdaterecordedAudiosInput | string[]
+    actualAudios?: UserUpdateactualAudiosInput | string[]
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
   }
 
@@ -2012,7 +2032,8 @@ export namespace Prisma {
     name?: SortOrder
     email?: SortOrder
     password?: SortOrder
-    audios?: SortOrder
+    recordedAudios?: SortOrder
+    actualAudios?: SortOrder
     role?: SortOrder
   }
 
@@ -2060,7 +2081,11 @@ export namespace Prisma {
     _max?: NestedEnumRoleFilter<$PrismaModel>
   }
 
-  export type UserCreateaudiosInput = {
+  export type UserCreaterecordedAudiosInput = {
+    set: string[]
+  }
+
+  export type UserCreateactualAudiosInput = {
     set: string[]
   }
 
@@ -2068,7 +2093,12 @@ export namespace Prisma {
     set?: string
   }
 
-  export type UserUpdateaudiosInput = {
+  export type UserUpdaterecordedAudiosInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
+  export type UserUpdateactualAudiosInput = {
     set?: string[]
     push?: string | string[]
   }
