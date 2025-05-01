@@ -114,21 +114,26 @@ export default function SpeechAnalysisPage() {
     "fr-FR": { "MALE": "fr-FR-Standard-B", "FEMALE": "fr-FR-Standard-C", "whisper": "fr" },
     "de-DE": { "MALE": "de-DE-Standard-B", "FEMALE": "de-DE-Standard-C", "whisper": "de" },
   }
-  const playSegment = (file: string, start: number, end: number) => {
-    const audio = new Audio(file)
-    
-    audio.addEventListener('loadedmetadata', () => {
-      audio.currentTime = start
-  
-      audio.play().then(() => {
-        const duration = (end - start) * 1000
-        setTimeout(() => audio.pause(), duration)
-      }).catch((err) => {
-        console.error("Playback error:", err)
-      })
-    })
-  }
+  // const playSegment = (file: string, start: number, end: number) => {
+  //   const audio = new Audio(file)
 
+  //   audio.addEventListener('loadedmetadata', () => {
+  //     audio.currentTime = start
+
+  //     audio.play().then(() => {
+  //       const duration = (end - start) * 1000
+  //       setTimeout(() => audio.pause(), duration)
+  //     }).catch((err) => {
+  //       console.error("Playback error:", err)
+  //     })
+  //   })
+  // }
+  const playWholeAudio = (file: string) => {
+    const audio = new Audio(file);
+    audio.play().catch((err) => {
+      console.error("Playback error:", err);
+    });
+  };
 
   const startRecording = async () => {
     const text = document.querySelector("textarea")?.value
@@ -136,7 +141,7 @@ export default function SpeechAnalysisPage() {
       text: text,
       voice: lang[langCode][voice],
       languageCode: langCode,
-      },
+    },
       {
         responseType: 'blob',
       }
@@ -196,46 +201,46 @@ export default function SpeechAnalysisPage() {
     }
   }
 
-  
-    // const mismatches = data.word_alignment.filter((item: any) => item.matched === false)
-    // console.log(mismatches)
+
+  // const mismatches = data.word_alignment.filter((item: any) => item.matched === false)
+  // console.log(mismatches)
 
   const getClip = (audioFile: string, start: number, end: number) => {
     return `${audioFile}#t=${start},${end}`
-  
+
   }
 
   return (
     <div className="max-w-xl mx-auto mt-10 text-center">
       <h1 className="text-2xl font-bold mb-4">Speech Analysis</h1>
       <div className="flex gap-2 mb-4">
-          <Select defaultValue={langCode} onValueChange={(value) => setLangCode(value)}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Select a language" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectLabel>Languages</SelectLabel>
-                <SelectItem value={langCode}>English</SelectItem>
-                <SelectItem value="es-ES">Spanish</SelectItem>
-                <SelectItem value="fr-FR">French</SelectItem>
-                <SelectItem value="de-DE">German</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-          <Select defaultValue={voice} onValueChange={(value) => setVoice(value)}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Select a voice" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectLabel>Voices</SelectLabel>
-                <SelectItem value="MALE">Male</SelectItem>
-                <SelectItem value="FEMALE">Female</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </div>
+        <Select defaultValue={langCode} onValueChange={(value) => setLangCode(value)}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Select a language" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectLabel>Languages</SelectLabel>
+              <SelectItem value={langCode}>English</SelectItem>
+              <SelectItem value="es-ES">Spanish</SelectItem>
+              <SelectItem value="fr-FR">French</SelectItem>
+              <SelectItem value="de-DE">German</SelectItem>
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+        <Select defaultValue={voice} onValueChange={(value) => setVoice(value)}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Select a voice" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectLabel>Voices</SelectLabel>
+              <SelectItem value="MALE">Male</SelectItem>
+              <SelectItem value="FEMALE">Female</SelectItem>
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+      </div>
       <Textarea placeholder="Enter your desired text" />
       <div className="space-x-4 mb-6 mt-6">
         <Button onClick={startRecording} disabled={isRecording}>Start Recording</Button>
@@ -248,47 +253,41 @@ export default function SpeechAnalysisPage() {
         </div>
       )}
       {data && (
-        <div className="p-4 rounded-xl shadow text-left mt-4">
+        <div className="p-4 rounded-xl shadow text-left mt-4 flex flex-col gap-4 justify-center items-center">
+          <div className="flex justify-between items-center gap-4 flex-wrap">
+            <div className="space-x-2">
+              <Button onClick={() => playWholeAudio("/ref_audio.wav")}>Play Full Reference Audio</Button>
+              <Button onClick={() => playWholeAudio("/user_audio.wav")}>Play Full User Audio</Button>
+            </div>
+            <div className="text-m text-muted-foreground m-2">
+              <span className="mr-4">✅ Correct: {data.num_matched}</span>
+              <span className="mr-4">🗣️ Mispronounced: {data.num_mispronounced}</span>
+              <span className="mr-4">⛔ Missing: {data.num_missing}</span>
+              <span>➕ Extra: {data.num_extra}</span>
+            </div>
+          </div>
           <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Expected</TableHead>
-          <TableHead>Actual</TableHead>
-          <TableHead>Reference Audio</TableHead>
-          <TableHead>User Audio</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {data && data.word_alignment.map((item: any, idx: number) => {
-          const [refStart, refEnd] = item.ref_time.split("-").map(parseFloat)
-          const [userStart, userEnd] = item.user_time ? item.user_time.split("-").map(parseFloat) : [null, null]
-          return (
+        <TableHeader>
+          <TableRow>
+            <TableHead>Expected</TableHead>
+            <TableHead>Actual</TableHead>
+            {/* <TableHead>Reference Time</TableHead>
+            <TableHead>User Time</TableHead> */}
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {data.word_alignment.map((item, idx) => (
             <TableRow key={idx}>
               <TableCell>{item.expected}</TableCell>
               <TableCell>{item.actual ?? "⛔ Missing"}</TableCell>
-              <TableCell>
-                {/* <audio controls preload="none">
-                  <source src={getClip("/ref_audio.wav", refStart, refEnd)} type="audio/wav" />
-                  Your browser does not support audio.
-                </audio> */}
-                <Button onClick={() => playSegment("/ref_audio.wav", userStart, userEnd)}>Play Clip</Button>
-              </TableCell>
-              <TableCell>
-                {userStart !== null ? (
-                  // <audio controls preload="none">
-                  //   <source src={getClip("/user_audio.wav", userStart, userEnd)} type="audio/wav" />
-                  //   Your browser does not support audio.
-                  // </audio>
-                  <Button onClick={() => playSegment("/user_audio.wav", userStart, userEnd)}>Play Clip</Button>
-                ) : (
-                  <span className="text-red-500">⛔ Not Found</span>
-                )}
-              </TableCell>
+              {/* <TableCell>{item.ref_time}</TableCell> */}
+              {/* <TableCell>
+                {item.user_time ?? <span className="text-red-500">⛔ Not Found</span>}
+              </TableCell> */}
             </TableRow>
-          )
-        })}
-      </TableBody>
-    </Table>
+          ))}
+        </TableBody>
+      </Table>
         </div>
       )}
     </div>
