@@ -9,7 +9,10 @@ import io
 import traceback
 from pydub import AudioSegment
 import subprocess
-from difflib import get_close_matches
+from difflib import get_close_matches, SequenceMatcher
+import traceback
+import librosa
+import numpy as np
 
 app = Flask(__name__)
 CORS(app)
@@ -57,78 +60,193 @@ def get_word_timestamps_google(audio_path, language="en-US"):
 
     return word_timestamps
 
+def extract_mfcc_segment(audio, sr, start_time, end_time):
+    start_sample = int(start_time * sr)
+    end_sample = int(end_time * sr)
+    segment = audio[start_sample:end_sample]
+    mfcc = librosa.feature.mfcc(y=segment, sr=sr, n_mfcc=13)
+    return mfcc.T
+
+def compare_mfccs(mfcc1, mfcc2):
+    from scipy.spatial.distance import cdist
+    from fastdtw import fastdtw
+    distance, _ = fastdtw(mfcc1, mfcc2, dist=lambda x, y: np.linalg.norm(x - y))
+    return distance
+
+
 @app.route('/compare-audio-whisper', methods=['POST'])
 def compare_audio_whisper():
     if 'reference' not in request.files or 'user' not in request.files:
         return jsonify({"error": "Both reference and user audio files are required"}), 400
-    print(request)
+
     reference_file = request.files['reference']
     user_file = request.files['user']
     language = request.form.get('language', None)
+    print(language)
 
+    # Save files temporarily
     ref_path = "ref_temp.wav"
     user_path = "user_temp.wav"
+    user_converted_path = "user_converted.wav"
     reference_file.save(ref_path)
     user_file.save(user_path)
-    user_converted_path = "user_converted.wav"
     convert_audio_to_linear16(ref_path, ref_path)
     convert_audio_to_linear16(user_path, user_converted_path)
-    # Transcribe with Whisper
+
     try:
         ref_words = get_word_timestamps_google(ref_path, language)
         user_words = get_word_timestamps_google(user_converted_path, language)
     except Exception as e:
         print("Error:", traceback.format_exc())
         return jsonify({"error": "STT transcription failed", "details": str(e)}), 500
-    print(ref_words)
-    print(user_words)
-    # Extract word texts
-    ref_text = [word[0].lower() for word in ref_words]
-    user_text = [word[0].lower() for word in user_words]
 
-    # Align words using SequenceMatcher
+    ref_text = [w[0].lower() for w in ref_words]
+    user_text = [w[0].lower() for w in user_words]
+
     matcher = SequenceMatcher(None, ref_text, user_text)
-    matching_blocks = matcher.get_matching_blocks()
+    alignment = []
+
+    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+        if tag == 'equal' or tag == 'replace':
+            for i, j in zip(range(i1, i2), range(j1, j2)):
+                alignment.append((ref_words[i], user_words[j]))
+        elif tag == 'delete':
+            for i in range(i1, i2):
+                alignment.append((ref_words[i], None))
+        elif tag == 'insert':
+            for j in range(j1, j2):
+                alignment.append((None, user_words[j]))
+
+    # Load audio for MFCC analysis
+    ref_audio, sr = librosa.load(ref_path, sr=16000)
+    user_audio, _ = librosa.load(user_converted_path, sr=16000)
 
     results = []
-    used_user_indices = set()
+    threshold = 7000
+    for ref_entry, user_entry in alignment:
+        if ref_entry and user_entry:
+            ref_word, rs, re = ref_entry
+            user_word, us, ue = user_entry
+            matched = ref_word.lower() == user_word.lower()
 
-    for i, (ref_word, ref_start, ref_end) in enumerate(ref_words):
-        best_match = None
-        best_score = 0
+            # Get MFCC and DTW score
+            ref_mfcc = extract_mfcc_segment(ref_audio, sr, rs, re)
+            user_mfcc = extract_mfcc_segment(user_audio, sr, us, ue)
+            dtw_score = compare_mfccs(ref_mfcc, user_mfcc)
 
-        for j, (user_word, user_start, user_end) in enumerate(user_words):
-            if j in used_user_indices:
-                continue
-            score = SequenceMatcher(None, ref_word.lower(), user_word.lower()).ratio()
-            if score > best_score:
-                best_score = score
-                best_match = (j, user_word, user_start, user_end)
-
-        if best_match and best_score > 0.4:  # Allow mismatches, threshold ~40%
-            j, user_word, user_start, user_end = best_match
-            used_user_indices.add(j)
             results.append({
                 "expected": ref_word,
                 "actual": user_word,
-                "matched": ref_word.lower() == user_word.lower(),
-                "ref_time": f"{ref_start:.2f}-{ref_end:.2f}",
-                "user_time": f"{user_start:.2f}-{user_end:.2f}"
+                "ref_time": f"{rs:.2f}-{re:.2f}",
+                "user_time": f"{us:.2f}-{ue:.2f}",
+                "matched": matched,
+                "dtw_score": dtw_score,
+                "status": "ok" if matched and dtw_score < threshold else "mispronounced"
             })
-        else:
-            # No close match found
+        elif ref_entry and not user_entry:
+            ref_word, rs, re = ref_entry
             results.append({
                 "expected": ref_word,
                 "actual": None,
+                "ref_time": f"{rs:.2f}-{re:.2f}",
+                "user_time": None,
                 "matched": False,
-                "ref_time": f"{ref_start:.2f}-{ref_end:.2f}",
-                "user_time": None
+                "dtw_score": None,
+                "status": "missing"
             })
+        elif user_entry and not ref_entry:
+            user_word, us, ue = user_entry
+            results.append({
+                "expected": None,
+                "actual": user_word,
+                "ref_time": None,
+                "user_time": f"{us:.2f}-{ue:.2f}",
+                "matched": False,
+                "dtw_score": None,
+                "status": "extra"
+            })
+
     return jsonify({
         "word_alignment": results,
-        "num_matched": sum(r["matched"] for r in results),
+        "num_matched": sum(1 for r in results if r["status"] == "ok"),
+        "num_mispronounced": sum(1 for r in results if r["status"] == "mispronounced"),
+        "num_missing": sum(1 for r in results if r["status"] == "missing"),
+        "num_extra": sum(1 for r in results if r["status"] == "extra"),
         "total": len(results)
     })
+
+# @app.route('/compare-audio-whisper', methods=['POST'])
+# def compare_audio_whisper():
+#     if 'reference' not in request.files or 'user' not in request.files:
+#         return jsonify({"error": "Both reference and user audio files are required"}), 400
+#     print(request)
+#     reference_file = request.files['reference']
+#     user_file = request.files['user']
+#     language = request.form.get('language', None)
+
+#     ref_path = "ref_temp.wav"
+#     user_path = "user_temp.wav"
+#     reference_file.save(ref_path)
+#     user_file.save(user_path)
+#     user_converted_path = "user_converted.wav"
+#     convert_audio_to_linear16(ref_path, ref_path)
+#     convert_audio_to_linear16(user_path, user_converted_path)
+#     # Transcribe with Whisper
+#     try:
+#         ref_words = get_word_timestamps_google(ref_path, language)
+#         user_words = get_word_timestamps_google(user_converted_path, language)
+#     except Exception as e:
+#         print("Error:", traceback.format_exc())
+#         return jsonify({"error": "STT transcription failed", "details": str(e)}), 500
+#     print(ref_words)
+#     print(user_words)
+#     # Extract word texts
+#     ref_text = [word[0].lower() for word in ref_words]
+#     user_text = [word[0].lower() for word in user_words]
+
+#     # Align words using SequenceMatcher
+#     matcher = SequenceMatcher(None, ref_text, user_text)
+#     matching_blocks = matcher.get_matching_blocks()
+
+#     results = []
+#     used_user_indices = set()
+
+#     for i, (ref_word, ref_start, ref_end) in enumerate(ref_words):
+#         best_match = None
+#         best_score = 0
+
+#         for j, (user_word, user_start, user_end) in enumerate(user_words):
+#             if j in used_user_indices:
+#                 continue
+#             score = SequenceMatcher(None, ref_word.lower(), user_word.lower()).ratio()
+#             if score > best_score:
+#                 best_score = score
+#                 best_match = (j, user_word, user_start, user_end)
+
+#         if best_match and best_score > 0.4:  # Allow mismatches, threshold ~40%
+#             j, user_word, user_start, user_end = best_match
+#             used_user_indices.add(j)
+#             results.append({
+#                 "expected": ref_word,
+#                 "actual": user_word,
+#                 "matched": ref_word.lower() == user_word.lower(),
+#                 "ref_time": f"{ref_start:.2f}-{ref_end:.2f}",
+#                 "user_time": f"{user_start:.2f}-{user_end:.2f}"
+#             })
+#         else:
+#             # No close match found
+#             results.append({
+#                 "expected": ref_word,
+#                 "actual": None,
+#                 "matched": False,
+#                 "ref_time": f"{ref_start:.2f}-{ref_end:.2f}",
+#                 "user_time": None
+#             })
+#     return jsonify({
+#         "word_alignment": results,
+#         "num_matched": sum(r["matched"] for r in results),
+#         "total": len(results)
+#     })
 
 
 ########################################################################################################################################################
@@ -189,7 +307,7 @@ def generate_tts():
     voice = data.get('voice', 'en-US-Wavenet-D')  # Default to American English voice
     language_code = data.get('languageCode', 'en-US')
     gender = data.get('ssmlGender', 'NEUTRAL')  # Options: MALE, FEMALE, NEUTRAL
-    speaking_rate = data.get('speakingRate', 0.6)  # Speed: 0.25–4.0
+    speaking_rate = data.get('speakingRate', 0.5)  # Speed: 0.25–4.0
     pitch = data.get('pitch', 0.0)  # Pitch: -20.0 to 20.0
     volume_gain = data.get('volumeGainDb', 0.0)  # Volume: -96.0 to 16.0
 
