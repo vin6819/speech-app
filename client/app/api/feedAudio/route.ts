@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 
 export async function POST(req: NextRequest) {
   try {
-    const { user_audio_base64, reference_audio_base64, language, user_email } = await req.json();
+    const { user_audio_base64, reference_audio_base64, user_email } = await req.json();
 
     if (!user_email || !user_audio_base64 || !reference_audio_base64) {
       return NextResponse.json({ message: 'Missing required fields' }, { status: 400 });
