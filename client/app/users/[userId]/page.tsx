@@ -24,7 +24,12 @@ export default  function UserDetailsPage({ params }: { params: { userId: string 
     }
 fetchUser()
   },[])
-  const tests = user?.tests || []
+  const tests = user?.recordedAudios || []
+  const actualTests=user?.actualAudios||[]
+  console.log("test is",tests);
+  console.log(actualTests);
+  
+  
 
   return (
     <div className="container mx-auto py-8">
@@ -53,13 +58,17 @@ fetchUser()
               <div className="grid gap-4">
                 {tests.map((test, index) => (
                   <Link href={`/dashboard/users/${user.id}/tests/${index}`} key={index}>
-                    <div className="flex items-center p-4 border rounded-lg hover:bg-muted transition-colors cursor-pointer">
+                    <div className="flex items-center p-4 border rounded-lg  transition-colors cursor-pointer">
                       <FileAudio className="h-5 w-5 mr-3 text-muted-foreground" />
                       <div className="flex-1">
                         <p className="font-medium">Test #{index + 1}</p>
-                        <p className="text-sm text-muted-foreground">{new Date(user.updatedAt).toLocaleDateString()}</p>
                       </div>
-                      <Badge>{test}</Badge>
+                      <section className="flex flex-col  gap-4">
+                      <Badge className="rounded-full text-md bg-zinc-900 text-white"> User Audio: {<audio src={test} controls></audio>}</Badge>
+                     
+                     <Badge className="rounded-full text-md bg-zinc-900 text-white"> Reference Audio: {<audio src={actualTests[index]} controls></audio>}</Badge>
+                      </section>
+                      
                     </div>
                   </Link>
                 ))}
