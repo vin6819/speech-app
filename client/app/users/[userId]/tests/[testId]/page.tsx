@@ -31,18 +31,7 @@ useEffect(()=>{
     notFound()
   }
 
-  // Fetch the audio files for this test
-  // This is a placeholder - you'll need to adjust based on your actual schema
-  const audioFiles = await prisma.audioFile.findMany({
-    where: {
-      userId: user.id,
-      testIndex: testIndex,
-    },
-    orderBy: {
-      createdAt: "asc",
-    },
-    take: 2,
-  })
+  const audioFiles = user.recordedAudios
 
   return (
     <div className="container mx-auto py-8">
@@ -71,13 +60,9 @@ useEffect(()=>{
               </CardHeader>
               <CardContent>
                 <div className="w-full">
-                  <audio controls src={audio.url} className="w-full">
+                  <audio controls src={audio} className="w-full">
                     Your browser does not support the audio element.
                   </audio>
-                </div>
-                <div className="mt-4 text-sm text-muted-foreground">
-                  <p>Recorded: {new Date(audio.createdAt).toLocaleString()}</p>
-                  <p>Duration: {audio.duration}s</p>
                 </div>
               </CardContent>
             </Card>
