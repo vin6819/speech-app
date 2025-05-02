@@ -124,7 +124,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\Users\\theco\\OneDrive\\Desktop\\mp2\\client\\lib\\generated\\prisma",
+      "value": "C:\\Users\\Nikunj Gupta\\speech-app\\client\\lib\\generated\\prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -138,11 +138,12 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "C:\\Users\\theco\\OneDrive\\Desktop\\mp2\\client\\prisma\\schema.prisma",
+    "sourceFilePath": "C:\\Users\\Nikunj Gupta\\speech-app\\client\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
-    "rootEnvPath": null
+    "rootEnvPath": null,
+    "schemaEnvPath": "../../../.env"
   },
   "relativePath": "../../../prisma",
   "clientVersion": "6.7.0",

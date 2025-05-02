@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import {useSession} from 'next-auth/react'
+import {signOut, useSession} from 'next-auth/react'
 import {User2} from 'lucide-react'
 const navItems = [
   { name: "Speech Analysis", href: "/speech-analysis" },
@@ -35,7 +35,7 @@ export default function Navbar() {
           })}
             <Link href={!session || !session.user?"/login":"/"}  className={`text-sm font-medium transition-colors ${
                   pathname=='/login' ? "text-white font-semibold" : "text-gray-400 hover:text-white"
-                }`}>{!session || !session.user?"Login":<User2></User2>}</Link>
+                }`}>{!session || !session.user?"Login":<User2 onClick={()=>signOut()}></User2>}</Link>
         </div>
       </div>
     </nav>

@@ -26,7 +26,9 @@ export default function RegisterPage() {
     }
 
     try {
-      await axios.post("/api/register", { Email: email, password, Name: name });
+      const response=await axios.post("/api/register", { Email: email, password, Name: name });
+      console.log(response.data);
+      
       router.push('/login')
     } catch (err) {
       const errM = err as AxiosError<{ message: string }>
