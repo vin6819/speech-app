@@ -136,7 +136,19 @@ export default function SpeechAnalysisPage() {
       console.error("Playback error:", err);
     });
   };
-
+  function blobToBase64(blob) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      
+      reader.onloadend = () => {
+        resolve(reader.result); 
+      };
+  
+      reader.onerror = reject;
+  
+      reader.readAsDataURL(blob); 
+    });
+  }
 
   const startRecording = async () => {
     const text = document.querySelector("textarea")?.value
@@ -185,9 +197,11 @@ export default function SpeechAnalysisPage() {
         const response = await axios.post('http://127.0.0.1:5001/compare-audio-whisper', formData2, {
           headers: { 'Content-Type': 'multipart/form-data' },
         })
+        const audioB = await blobToBase64(audioBlob)
+        const ttsB = await blobToBase64(ttsBlob)
         await axios.post('/api/feedAudio', {
-          user_audio_base64: audioBlob,
-          reference_audio_base64: ttsBlob,
+          user_audio_base64: audioB,
+          reference_audio_base64: ttsB,
           language: langCode,
           user_email: session?.user?.email || "anonymous"
         });
@@ -270,8 +284,8 @@ export default function SpeechAnalysisPage() {
       </div>
       <Textarea placeholder="Enter your desired text" />
       <div className="space-x-4 mb-6 mt-6">
-        <Button onClick={startRecording} disabled={isRecording}>Start Recording</Button>
-        <Button onClick={stopRecording} disabled={!isRecording}>Stop Recording</Button>
+        <Button onClick={startRecording} disabled={isRecording} className="cursor-pointer">Start Recording</Button>
+        <Button onClick={stopRecording} disabled={!isRecording} className="cursor-pointer">Stop Recording</Button>
       </div>
       {transcript && (
         <div className="p-4 rounded-xl shadow text-left">
@@ -283,8 +297,8 @@ export default function SpeechAnalysisPage() {
         <div className="p-4 rounded-xl shadow text-left mt-4 flex flex-col gap-4 justify-center items-center">
           <div className="flex justify-between items-center gap-4 flex-wrap">
             <div className="space-x-2">
-              <Button onClick={() => playWholeAudio("/ref_audio.wav")}>Play Full Reference Audio</Button>
-              <Button onClick={() => playWholeAudio("/user_audio.wav")}>Play Full User Audio</Button>
+              <Button onClick={() => playWholeAudio("/ref_audio.wav")} className="cursor-pointer">Play Full Reference Audio</Button>
+              <Button onClick={() => playWholeAudio("/user_audio.wav")} className="cursor-pointer">Play Full User Audio</Button>
             </div>
             <div className="text-m text-muted-foreground m-2">
               <span className="mr-4">✅ Correct: {data.num_matched}</span>

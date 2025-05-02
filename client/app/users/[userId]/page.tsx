@@ -24,7 +24,7 @@ export default  function UserDetailsPage({ params }: { params: { userId: string 
     }
 fetchUser()
   },[])
-  const tests = user?.tests || []
+  const tests = user?.recordedAudios || []
 
   return (
     <div className="container mx-auto py-8">
@@ -57,9 +57,9 @@ fetchUser()
                       <FileAudio className="h-5 w-5 mr-3 text-muted-foreground" />
                       <div className="flex-1">
                         <p className="font-medium">Test #{index + 1}</p>
-                        <p className="text-sm text-muted-foreground">{new Date(user.updatedAt).toLocaleDateString()}</p>
+                        {/* <p className="text-sm text-muted-foreground">{new Date(user.updatedAt).toLocaleDateString()}</p> */}
                       </div>
-                      <Badge>{test}</Badge>
+                      <Badge>{<audio src={test} controls/>}</Badge>
                     </div>
                   </Link>
                 ))}
