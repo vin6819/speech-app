@@ -19,11 +19,12 @@ const options:NextAuthOptions={
                 }})
                const users=await prisma.user.findMany()
                console.log(users);
+               console.log(user);
+               
                
                 
                 if(!user) throw new Error("User Not Found")
-const passwordValid=await bcryptjs.compare(password,user.password)
-                if(!passwordValid)throw new Error("Password not valid")
+                
                 return user
             }
         
