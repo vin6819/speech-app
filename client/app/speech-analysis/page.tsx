@@ -101,7 +101,7 @@ import { useSession } from "next-auth/react"
 // }
 
 export default function SpeechAnalysisPage() {
-  const {data:session}=useSession()
+  const { data: session } = useSession()
   const [transcript, setTranscript] = useState("")
   const [isRecording, setIsRecording] = useState(false)
   const mediaRecorderRef = useRef(null)
@@ -118,10 +118,10 @@ export default function SpeechAnalysisPage() {
   }
   // const playSegment = (file: string, start: number, end: number) => {
   //   const audio = new Audio(file)
-    
+
   //   audio.addEventListener('loadedmetadata', () => {
   //     audio.currentTime = start
-  
+
   //     audio.play().then(() => {
   //       const duration = (end - start) * 1000
   //       setTimeout(() => audio.pause(), duration)
@@ -185,15 +185,32 @@ export default function SpeechAnalysisPage() {
         const response = await axios.post('http://127.0.0.1:5001/compare-audio-whisper', formData2, {
           headers: { 'Content-Type': 'multipart/form-data' },
         })
-        // await axios.post('/api/feedAudio', {
-        //   user_audio_base64: audioBlob,
-        //   reference_audio_base64: ttsBlob,
-        //   language: langCode,
-        //   user_email: session?.user?.email || "anonymous"
-        // });
+        await axios.post('/api/feedAudio', {
+          user_audio_base64: audioBlob,
+          reference_audio_base64: ttsBlob,
+          language: langCode,
+          user_email: session?.user?.email || "anonymous"
+        });
 
         setTranscript(response.data.transcript)
         setData(response.data)
+        const { num_matched, num_mispronounced, num_missing, num_extra } = response.data;
+        let disorder = "Normal Speech or Mild Accent";
+
+        if (num_mispronounced > num_missing && num_mispronounced > num_extra && num_mispronounced > 3) {
+          disorder = "Articulation Disorder";
+        } else if (num_missing > num_mispronounced && num_missing > num_extra && num_missing > 3) {
+          disorder = "Apraxia of Speech";
+        } else if (num_extra > 3) {
+          disorder = "Fluency Disorder (e.g., Stuttering)";
+        } else if (
+          num_mispronounced >= 2 &&
+          num_missing >= 2
+        ) {
+          disorder = "Phonological Disorder";
+        }
+
+        setData(prev => ({ ...prev, predicted_disorder: disorder }));
         console.log('STT Response:', response.data)
       } catch (error) {
         console.error('STT Error:', error)
@@ -277,48 +294,53 @@ export default function SpeechAnalysisPage() {
             </div>
           </div>
           <Table>
-  <TableHeader>
-    <TableRow>
-      <TableHead>Status</TableHead>
-      <TableHead>Expected</TableHead>
-      <TableHead>Actual</TableHead>
-    </TableRow>
-  </TableHeader>
-  <TableBody>
-    {data.word_alignment.map((item, idx) => {
-      let rowClass = "text-black hover:text-black"; // force text color on hover too
-      switch (item.status) {
-        case "ok":
-          rowClass += " bg-green-100 hover:bg-green-200";
-          break;
-        case "mispronounced":
-          rowClass += " bg-yellow-100 hover:bg-yellow-200";
-          break;
-        case "missing":
-          rowClass += " bg-red-100 hover:bg-red-200";
-          break;
-        case "extra":
-          rowClass += " bg-orange-100 hover:bg-orange-200";
-          break;
-        default:
-          rowClass += "";
-      }
+            <TableHeader>
+              <TableRow>
+                <TableHead>Status</TableHead>
+                <TableHead>Expected</TableHead>
+                <TableHead>Actual</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {data.word_alignment.map((item, idx) => {
+                let rowClass = "text-black hover:text-black"; // force text color on hover too
+                switch (item.status) {
+                  case "ok":
+                    rowClass += " bg-green-100 hover:bg-green-200";
+                    break;
+                  case "mispronounced":
+                    rowClass += " bg-yellow-100 hover:bg-yellow-200";
+                    break;
+                  case "missing":
+                    rowClass += " bg-red-100 hover:bg-red-200";
+                    break;
+                  case "extra":
+                    rowClass += " bg-orange-100 hover:bg-orange-200";
+                    break;
+                  default:
+                    rowClass += "";
+                }
 
-      return (
-        <TableRow key={idx} className={rowClass}>
-          <TableCell>
-            {item.status === "ok" && "✅ Matched"}
-            {item.status === "mispronounced" && "🔶 Mispronounced"}
-            {item.status === "missing" && "❌ Missing"}
-            {item.status === "extra" && "⚠️ Extra"}
-          </TableCell>
-          <TableCell>{item.expected ?? "—"}</TableCell>
-          <TableCell>{item.actual ?? "⛔ Missing"}</TableCell>
-        </TableRow>
-      );
-    })}
-  </TableBody>
-</Table>
+                return (
+                  <TableRow key={idx} className={rowClass}>
+                    <TableCell>
+                      {item.status === "ok" && "✅ Matched"}
+                      {item.status === "mispronounced" && "🔶 Mispronounced"}
+                      {item.status === "missing" && "❌ Missing"}
+                      {item.status === "extra" && "⚠️ Extra"}
+                    </TableCell>
+                    <TableCell>{item.expected ?? "—"}</TableCell>
+                    <TableCell>{item.actual ?? "⛔ Missing"}</TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+          {data.predicted_disorder && (
+            <div className="text-lg font-semibold text-red-500 mt-2">
+              🧠 Predicted Speech Disorder: {data.predicted_disorder}
+            </div>
+          )}
 
           {/* <Table>
         <TableHeader>
