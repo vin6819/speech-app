@@ -17,15 +17,15 @@ app = Flask(__name__)
 CORS(app)
 model = whisper.load_model("base")
 
-credentials_path = "google-credentials.json"
+# credentials_path = "google-credentials.json"
 
-if os.getenv("GOOGLE_CREDENTIALS_JSON"):
-    with open(credentials_path, "w") as f:
-        f.write(os.getenv("GOOGLE_CREDENTIALS_JSON"))
+# if os.getenv("GOOGLE_CREDENTIALS_JSON"):
+#     with open(credentials_path, "w") as f:
+#         f.write(os.getenv("GOOGLE_CREDENTIALS_JSON"))
 
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = credentials_path
+#     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = credentials_path
 
-# os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "attendance-441817-cb17d8a87180.json"
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "attendance-441817-cb17d8a87180.json"
 
 gcloud_tts_client = texttospeech.TextToSpeechClient()
 speech_client = speech.SpeechClient()
