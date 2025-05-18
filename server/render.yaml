@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: flask-app
+    runtime: python
+    buildCommand: |
+      apt-get update && apt-get install -y ffmpeg
+      pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: GOOGLE_APPLICATION_CREDENTIALS
+        value: attendance-441817-cb17d8a87180.json
+    staticPublishPath: ""

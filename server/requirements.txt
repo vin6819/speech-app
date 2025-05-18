@@ -1,0 +1,9 @@
+Flask
+flask-cors
+openai-whisper
+pydub
+google-cloud-texttospeech
+google-cloud-speech
+librosa
+numpy
+gunicorn

@@ -8,7 +8,6 @@ from flask import send_file
 import io
 import traceback
 from pydub import AudioSegment
-import subprocess
 from difflib import get_close_matches, SequenceMatcher
 import traceback
 import librosa
@@ -19,9 +18,12 @@ CORS(app)
 model = whisper.load_model("base")
 
 
-
+# creds_str = os.environ.get("GOOGLE_CREDS")
+# with open("google_creds.json", "w") as f:
+#     f.write(creds_str)
 # Set up Google Cloud TTS
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "attendance-441817-cb17d8a87180.json"
+# os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "google_creds.json"
 gcloud_tts_client = texttospeech.TextToSpeechClient()
 speech_client = speech.SpeechClient()
 
