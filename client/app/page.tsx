@@ -1,7 +1,11 @@
-
+import { redirect } from 'next/navigation';
 
 export default function Home() {
-  return (
-    <></>
-  );
+  redirect('/speech-analysis');
 }
+
+// export default function Home() {
+//   return (
+//     <></>
+//   );
+// }

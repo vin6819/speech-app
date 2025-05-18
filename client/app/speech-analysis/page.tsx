@@ -203,7 +203,7 @@ export default function SpeechAnalysisPage() {
           user_audio_base64: audioB,
           reference_audio_base64: ttsB,
           language: langCode,
-          user_email: session?.user?.email || "anonymous"
+          user_email: session?.user?.email || "phantomera.2000@gmail.com"
         });
 
         setTranscript(response.data.transcript)
