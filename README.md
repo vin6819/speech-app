@@ -30,8 +30,8 @@ A full-stack AI-powered web application to assist users with speech and pronunci
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/your-repo-name.git
-cd your-repo-name
+git clone https://github.com/vin6819/speech-app.git
+cd speech-app
 ```
 
 ---
@@ -46,9 +46,8 @@ Ensure the following are installed:
 - **Google Cloud Account** with access to:
   - Google Cloud Text-to-Speech API
   - Google Cloud Speech-to-Text API
-- **Virtual Environment Tool** (e.g., `venv`, `pipenv`)
 
-> ⚠️ Download your Google Cloud **credentials JSON file** and set the `GOOGLE_APPLICATION_CREDENTIALS` environment variable pointing to it.
+> ⚠️ Download your Google Cloud **credentials JSON file** and save it as "google_credentials.json" in server folder.
 
 ---
 
@@ -80,4 +79,4 @@ flask --app app run --port 5001
 
 ## 📞 Contact
 
-For issues or feature requests, feel free to open an [issue](https://github.com/your-username/your-repo-name/issues).
+For issues or feature requests, feel free to open an [issue](https://github.com/vin6819/speech-app/issues).
