@@ -5,7 +5,7 @@ from google.cloud import texttospeech, speech
 from difflib import SequenceMatcher
 from flask_cors import CORS
 from flask import send_file
-import io
+import io   
 import traceback
 from pydub import AudioSegment
 from difflib import get_close_matches, SequenceMatcher
@@ -179,87 +179,6 @@ def compare_audio_whisper():
         "num_extra": sum(1 for r in results if r["status"] == "extra"),
         "total": len(results)
     })
-
-# @app.route('/compare-audio-whisper', methods=['POST'])
-# def compare_audio_whisper():
-#     if 'reference' not in request.files or 'user' not in request.files:
-#         return jsonify({"error": "Both reference and user audio files are required"}), 400
-#     print(request)
-#     reference_file = request.files['reference']
-#     user_file = request.files['user']
-#     language = request.form.get('language', None)
-
-#     ref_path = "ref_temp.wav"
-#     user_path = "user_temp.wav"
-#     reference_file.save(ref_path)
-#     user_file.save(user_path)
-#     user_converted_path = "user_converted.wav"
-#     convert_audio_to_linear16(ref_path, ref_path)
-#     convert_audio_to_linear16(user_path, user_converted_path)
-#     # Transcribe with Whisper
-#     try:
-#         ref_words = get_word_timestamps_google(ref_path, language)
-#         user_words = get_word_timestamps_google(user_converted_path, language)
-#     except Exception as e:
-#         print("Error:", traceback.format_exc())
-#         return jsonify({"error": "STT transcription failed", "details": str(e)}), 500
-#     print(ref_words)
-#     print(user_words)
-#     # Extract word texts
-#     ref_text = [word[0].lower() for word in ref_words]
-#     user_text = [word[0].lower() for word in user_words]
-
-#     # Align words using SequenceMatcher
-#     matcher = SequenceMatcher(None, ref_text, user_text)
-#     matching_blocks = matcher.get_matching_blocks()
-
-#     results = []
-#     used_user_indices = set()
-
-#     for i, (ref_word, ref_start, ref_end) in enumerate(ref_words):
-#         best_match = None
-#         best_score = 0
-
-#         for j, (user_word, user_start, user_end) in enumerate(user_words):
-#             if j in used_user_indices:
-#                 continue
-#             score = SequenceMatcher(None, ref_word.lower(), user_word.lower()).ratio()
-#             if score > best_score:
-#                 best_score = score
-#                 best_match = (j, user_word, user_start, user_end)
-
-#         if best_match and best_score > 0.4:  # Allow mismatches, threshold ~40%
-#             j, user_word, user_start, user_end = best_match
-#             used_user_indices.add(j)
-#             results.append({
-#                 "expected": ref_word,
-#                 "actual": user_word,
-#                 "matched": ref_word.lower() == user_word.lower(),
-#                 "ref_time": f"{ref_start:.2f}-{ref_end:.2f}",
-#                 "user_time": f"{user_start:.2f}-{user_end:.2f}"
-#             })
-#         else:
-#             # No close match found
-#             results.append({
-#                 "expected": ref_word,
-#                 "actual": None,
-#                 "matched": False,
-#                 "ref_time": f"{ref_start:.2f}-{ref_end:.2f}",
-#                 "user_time": None
-#             })
-#     return jsonify({
-#         "word_alignment": results,
-#         "num_matched": sum(r["matched"] for r in results),
-#         "total": len(results)
-#     })
-
-
-########################################################################################################################################################
-
-
-
-
-
 
 
 
